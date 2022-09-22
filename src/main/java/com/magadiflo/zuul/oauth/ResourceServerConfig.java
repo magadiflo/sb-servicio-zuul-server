@@ -1,5 +1,7 @@
 package com.magadiflo.zuul.oauth;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -10,9 +12,18 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
+/**
+ * @RefreshScope, Si queremos actualiza la configuración (ejmpl. modificación en el servidor de configuración, 
+ * luego hacer un comit, etc...) y nestra aplicación está levantada y no queremos reiniciarla,
+ * entonces lo podríamos hacer mediante ACTUATOR, con Refresh
+ * */
+@RefreshScope
 @Configuration
 @EnableResourceServer
 public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
+	
+	@Value("${config.security.oauth.jwt.key}")
+	private String jwtKey;
 
 	@Override
 	public void configure(ResourceServerSecurityConfigurer resources) throws Exception { //Para el token
@@ -37,7 +48,7 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
 	@Bean
 	public JwtAccessTokenConverter accessTokenConverter() {
 		JwtAccessTokenConverter tokenConverter = new JwtAccessTokenConverter();
-		tokenConverter.setSigningKey("algun_codigo_secreto_123456");		
+		tokenConverter.setSigningKey(this.jwtKey);		
 		return tokenConverter;
 	}
 
